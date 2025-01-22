@@ -1,13 +1,19 @@
 package org.example.entities;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
+@SequenceGenerator(name = "seq", initialValue = 1, allocationSize = 1)
+@TableGenerator(name = "tab")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")
+    //@GeneratedValue(strategy = GenerationType.TABLE, generator = "tab")
     private Long id;
     @Column(name = "name", nullable = false)
     private String firstname;
@@ -15,22 +21,38 @@ public class User {
     private String lastname;
     @Column(name = "age", nullable = true )
     private int age;
-    @Column(length = 10)
-    private String city;
     @Column(unique = true, nullable = false)
     private String email;
     @Column(nullable = false)
     private String password;
+    @Embedded
+    private Address address;
+    @OneToOne(mappedBy = "utente", cascade = CascadeType.ALL)
+    private Passport passport;
+
+    @ManyToOne
+    @JoinColumn(name = "azienda_id")
+    private Azienda azienda;
+
+    @ManyToMany
+    @JoinTable(
+            name = "users_courses",
+            joinColumns = @JoinColumn(name = "utente_id"),
+            inverseJoinColumns = @JoinColumn(name = "corsi_id")
+    )
+    private List<Courses> listaCorsi = new ArrayList<Courses>();
+
+
 
     public User() {}
 
-    public User(String firstname, String lastname, int age, String city, String email, String password) {
+    public User(String firstname, String lastname, int age, String email, String password, Address address) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.age = age;
-        this.city = city;
         this.email = email;
         this.password = password;
+        this.address = address;
     }
 
     public Long getId() {
@@ -65,14 +87,6 @@ public class User {
         this.age = age;
     }
 
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -89,6 +103,22 @@ public class User {
         this.password = password;
     }
 
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public Passport getPassport() {
+        return passport;
+    }
+
+    public void setPassport(Passport passport) {
+        this.passport = passport;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -96,9 +126,9 @@ public class User {
                 ", firstname='" + firstname + '\'' +
                 ", lastname='" + lastname + '\'' +
                 ", age=" + age +
-                ", city='" + city + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
+                ", address=" + address +
                 '}';
     }
 }
